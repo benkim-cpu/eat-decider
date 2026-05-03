@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#ff6b35">
+<meta name="theme-color" content="#1d1d1f">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='192' viewBox='0 0 192 192'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23FF6B35'/%3E%3Cstop offset='100%25' stop-color='%23F7C948'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='96' cy='96' r='88' fill='url(%23g)'/%3E%3Ctext x='96' y='126' font-family='-apple-system,system-ui,sans-serif' font-size='90' font-weight='bold' fill='white' text-anchor='middle'%3E吃%3C/text%3E%3C/svg%3E">
 <title>今天吃啥？决定器 🍔</title>
@@ -14,15 +14,16 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
 :root{
-  --bg:#fff8f0;
-  --card:#fff;
+  --bg:#1d1d1f;
+  --card:#2a2a2d;
+  --card-border:#3a3a3d;
   --primary:#ff6b35;
-  --primary-light:#ff8f5c;
-  --text:#2d2d2d;
-  --text-light:#888;
-  --border:#f0e6dc;
-  --shadow:0 8px 32px rgba(0,0,0,0.08);
-  --radius:16px;
+  --primary-glow:rgba(255,107,53,0.15);
+  --text:#f5f5f7;
+  --text-dim:#86868b;
+  --text-mute:#6e6e73;
+  --radius:20px;
+  --shadow:0 8px 40px rgba(0,0,0,0.4);
 }
 
 body{
@@ -30,157 +31,227 @@ body{
   background:var(--bg);color:var(--text);
   min-height:100dvh;display:flex;justify-content:center;align-items:flex-start;
   padding:20px 16px 40px;-webkit-tap-highlight-color:transparent;
+  -webkit-font-smoothing:antialiased;
 }
 .container{max-width:480px;width:100%}
 
 /* ─── Header ───────────────────────────────────── */
-.header{text-align:center;padding:16px 0 8px}
-.header .icon{font-size:28px}
+.header{text-align:center;padding:20px 0 12px}
+.header .icon{font-size:32px;filter:drop-shadow(0 2px 12px rgba(255,107,53,0.2))}
 .header h1{
-  font-size:26px;font-weight:800;margin-top:2px;
-  background:linear-gradient(135deg,#ff6b35,#f7c948);
+  font-size:28px;font-weight:800;margin-top:4px;letter-spacing:-0.5px;
+  background:linear-gradient(135deg,#ff6b35 0%,#f7c948 50%,#ff9a76 100%);
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
 }
-.header p{color:var(--text-light);font-size:13px;margin-top:2px}
+.header p{color:var(--text-dim);font-size:13px;margin-top:3px;letter-spacing:0.3px}
 
 /* ─── Wheel Card ───────────────────────────────── */
 .wheel-card{
   background:var(--card);border-radius:var(--radius);
-  box-shadow:var(--shadow);padding:20px;margin:12px 0;
+  border:1px solid var(--card-border);
+  box-shadow:var(--shadow);padding:24px;margin:16px 0;
 }
 .wheel-wrapper{
   position:relative;width:100%;max-width:340px;margin:0 auto;aspect-ratio:1;
 }
 .wheel-wrapper canvas{width:100%;height:100%;display:block;border-radius:50%}
 
-/* Pointer */
+/* ─── Pointer (Diamond) ────────────────────────── */
 .pointer{
-  position:absolute;top:-4px;left:50%;transform:translateX(-50%);
-  width:0;height:0;
-  border-left:16px solid transparent;border-right:16px solid transparent;
-  border-top:26px solid var(--primary);
-  filter:drop-shadow(0 2px 4px rgba(0,0,0,0.25));
-  z-index:5;transition:top .15s;
+  position:absolute;top:-2px;left:50%;transform:translateX(-50%);
+  z-index:5;
+  width:16px;height:16px;
+  background:var(--primary);
+  transform:translateX(-50%) rotate(45deg);
+  box-shadow:0 0 12px rgba(255,107,53,0.6),0 2px 8px rgba(0,0,0,0.3);
+  border-radius:2px;
+}
+.pointer::after{
+  content:'';position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  width:6px;height:6px;background:#fff;border-radius:1px;opacity:0.8;
 }
 
-/* Center spin button */
+/* ─── Center Button (Frosted Glass) ────────────── */
 .center-btn{
   position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-  width:60px;height:60px;border-radius:50%;
-  background:var(--primary);color:#fff;
-  border:4px solid #fff;font-size:13px;font-weight:700;cursor:pointer;
-  box-shadow:0 4px 16px rgba(255,107,53,0.4);
-  transition:transform .15s,box-shadow .15s;z-index:10;
-  display:flex;align-items:center;justify-content:center;letter-spacing:1px;
+  width:58px;height:58px;border-radius:50%;
+  background:rgba(255,255,255,0.08);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  border:1.5px solid rgba(255,255,255,0.12);
+  color:#fff;
+  font-size:0;cursor:pointer;
+  box-shadow:0 4px 20px rgba(0,0,0,0.2),inset 0 1px 0 rgba(255,255,255,0.15);
+  transition:transform .2s cubic-bezier(.175,.885,.32,1.275),box-shadow .2s;
+  z-index:10;
+  display:flex;align-items:center;justify-content:center;
   user-select:none;
 }
-.center-btn:active{transform:translate(-50%,-50%) scale(.9)}
-.center-btn.spinning{pointer-events:none;opacity:.8}
+.center-btn:active{transform:translate(-50%,-50%) scale(.88)}
+.center-btn.spinning{pointer-events:none;opacity:1}
+.center-btn .icon-play{display:block}
+.center-btn .icon-dots{display:none}
+.center-btn.spinning .icon-play{display:none}
+.center-btn.spinning .icon-dots{display:block}
+.center-btn:hover{background:rgba(255,255,255,0.12)}
+.center-btn svg{width:24px;height:24px;fill:#fff;opacity:0.9}
 
 /* ─── Options ──────────────────────────────────── */
 .options-section{
   background:var(--card);border-radius:var(--radius);
-  box-shadow:var(--shadow);padding:18px 20px;margin:12px 0;
+  border:1px solid var(--card-border);
+  box-shadow:var(--shadow);padding:20px;margin:16px 0;
 }
 .options-header{
-  display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;
+  display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;
 }
-.options-header h2{font-size:15px;font-weight:600}
+.options-header h2{font-size:15px;font-weight:600;color:var(--text);letter-spacing:-0.2px}
 .options-header .count{
-  font-size:12px;color:var(--text-light);
-  background:var(--bg);padding:2px 10px;border-radius:20px;
+  font-size:12px;color:var(--text-dim);
+  background:rgba(255,255,255,0.04);padding:3px 12px;border-radius:20px;
+  border:1px solid rgba(255,255,255,0.06);
 }
 .option-list{
-  display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;min-height:30px;
+  display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;min-height:32px;
 }
 .option-tag{
-  display:inline-flex;align-items:center;gap:4px;
-  padding:5px 12px;background:var(--bg);border-radius:20px;font-size:13px;
-  animation:tagIn .25s ease-out;
+  display:inline-flex;align-items:center;gap:5px;
+  padding:6px 14px;background:rgba(255,255,255,0.06);
+  border-radius:100px;font-size:13px;color:var(--text);
+  border:1px solid rgba(255,255,255,0.08);
+  animation:tagSpringIn .4s cubic-bezier(.175,.885,.32,1.275);
 }
-@keyframes tagIn{from{transform:scale(.8);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes tagSpringIn{
+  0%{transform:scale(0.5) translateY(8px);opacity:0}
+  100%{transform:scale(1) translateY(0);opacity:1}
+}
+@keyframes tagSpringOut{
+  0%{transform:scale(1);opacity:1}
+  100%{transform:scale(0.4) translateY(-8px);opacity:0}
+}
+.option-tag.removing{animation:tagSpringOut .25s ease-in forwards;pointer-events:none}
 .option-tag .remove{
-  width:16px;height:16px;border-radius:50%;border:none;
-  background:#ddd;color:var(--text-light);font-size:10px;cursor:pointer;
+  width:18px;height:18px;border-radius:50%;border:none;
+  background:rgba(255,255,255,0.1);color:var(--text-dim);
+  font-size:8px;cursor:pointer;
   display:flex;align-items:center;justify-content:center;
-  transition:background .15s;line-height:1;
+  transition:all .2s;line-height:1;padding:0;
 }
-.option-tag .remove:hover{background:#ff4444;color:#fff}
+.option-tag .remove:hover{background:rgba(255,59,48,0.7);color:#fff}
+.option-tag .remove svg{width:8px;height:8px;fill:currentColor}
 
 .add-row{display:flex;gap:8px}
 .add-row input{
-  flex:1;padding:9px 14px;border:2px dashed var(--border);border-radius:24px;
-  font-size:14px;outline:none;background:transparent;transition:border-color .2s;
+  flex:1;padding:10px 16px;border:1.5px solid rgba(255,255,255,0.08);
+  border-radius:100px;font-size:14px;outline:none;
+  background:rgba(255,255,255,0.04);color:var(--text);
+  transition:border-color .2s,background .2s;
 }
-.add-row input:focus{border-color:var(--primary-light)}
-.add-row input::placeholder{color:#ccc}
+.add-row input:focus{border-color:var(--primary);background:rgba(255,107,53,0.04)}
+.add-row input::placeholder{color:var(--text-mute)}
 .add-row button{
-  padding:9px 18px;background:var(--primary);color:#fff;
-  border:none;border-radius:24px;font-size:13px;font-weight:600;cursor:pointer;
-  transition:background .15s;white-space:nowrap;
+  padding:10px 20px;background:var(--primary);color:#fff;
+  border:none;border-radius:100px;font-size:13px;font-weight:600;cursor:pointer;
+  transition:all .15s;white-space:nowrap;letter-spacing:0.3px;
 }
-.add-row button:hover{background:var(--primary-light)}
-.add-row button:active{transform:scale(.96)}
+.add-row button:hover{background:#ff7f4c}
+.add-row button:active{transform:scale(.95)}
 
 /* Presets */
-.presets{display:flex;gap:5px;flex-wrap:wrap;margin-top:10px}
+.presets{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
 .presets button{
-  padding:4px 10px;border-radius:14px;border:1.5px solid var(--border);
-  background:transparent;font-size:11px;color:var(--text-light);cursor:pointer;
-  transition:all .15s;
+  padding:5px 12px;border-radius:100px;border:1px solid rgba(255,255,255,0.06);
+  background:rgba(255,255,255,0.03);font-size:11px;color:var(--text-dim);cursor:pointer;
+  transition:all .2s;letter-spacing:0.2px;
 }
 .presets button:hover{
-  border-color:var(--primary-light);color:var(--primary);
-  background:rgba(255,107,53,.06);
+  border-color:var(--primary);color:var(--primary);
+  background:rgba(255,107,53,.08);
 }
 
-/* ─── Result Modal ─────────────────────────────── */
+/* ─── Result Overlay (Full Screen) ─────────────── */
 .result-overlay{
-  display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);
+  display:none;position:fixed;inset:0;
+  background:rgba(29,29,31,0.85);
   z-index:100;align-items:center;justify-content:center;
-  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
-  animation:fadeIn .3s ease;
+  backdrop-filter:blur(40px);
+  -webkit-backdrop-filter:blur(40px);
+  animation:resultOverlayIn .5s cubic-bezier(.165,.84,.44,1);
 }
 .result-overlay.show{display:flex}
-@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes resultOverlayIn{from{opacity:0;backdrop-filter:blur(0)}to{opacity:1;backdrop-filter:blur(40px)}}
 
-.result-modal{
-  background:#fff;border-radius:24px;padding:36px 28px 28px;
-  text-align:center;max-width:340px;width:88vw;
-  box-shadow:0 20px 60px rgba(0,0,0,.2);
-  animation:popIn .4s cubic-bezier(.175,.885,.32,1.275);position:relative;
+.result-content{
+  text-align:center;padding:40px 32px;
+  animation:resultSpringIn .6s cubic-bezier(.175,.885,.32,1.375);
 }
-@keyframes popIn{from{transform:scale(.7);opacity:0}to{transform:scale(1);opacity:1}}
-.result-modal .close{
-  position:absolute;top:10px;right:14px;background:none;border:none;
-  font-size:18px;color:var(--text-light);cursor:pointer;padding:4px;line-height:1;
+@keyframes resultSpringIn{
+  0%{transform:scale(0.6);opacity:0}
+  60%{transform:scale(1.04);opacity:1}
+  100%{transform:scale(1);opacity:1}
 }
-.result-modal .emoji{font-size:60px;margin-bottom:6px;display:block}
-.result-modal h2{font-size:13px;color:var(--text-light);font-weight:500;margin-bottom:2px}
-.result-modal .food{
-  font-size:30px;font-weight:700;color:var(--primary);margin:6px 0 18px;
+
+.result-content .emoji{font-size:64px;display:block;margin-bottom:8px;filter:drop-shadow(0 4px 16px rgba(0,0,0,0.2))}
+.result-content h2{
+  font-size:14px;color:var(--text-dim);font-weight:500;margin-bottom:4px;
+  letter-spacing:2px;text-transform:uppercase;
 }
-.result-modal .actions{display:flex;gap:10px;justify-content:center}
-.result-modal .actions button{
-  padding:10px 24px;border-radius:24px;border:none;font-size:13px;font-weight:600;
-  cursor:pointer;transition:transform .12s;
+.result-content .food{
+  font-size:min(72px,14vw);font-weight:800;color:#fff;
+  margin:8px 0 40px;letter-spacing:-2px;
+  line-height:1.1;
+  text-shadow:0 2px 20px rgba(0,0,0,0.3);
 }
-.result-modal .actions button:active{transform:scale(.95)}
-.result-modal .actions .btn-primary{background:var(--primary);color:#fff;flex:1}
-.result-modal .actions .btn-secondary{background:var(--bg);color:var(--text);flex:1}
+.result-content .actions{
+  display:flex;gap:16px;justify-content:center;
+}
+.result-content .actions button{
+  width:56px;height:56px;border-radius:50%;
+  border:1px solid rgba(255,255,255,0.12);
+  background:rgba(255,255,255,0.06);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+  color:var(--text);cursor:pointer;
+  transition:all .2s cubic-bezier(.175,.885,.32,1.275);
+  display:flex;align-items:center;justify-content:center;
+  font-size:0;
+}
+.result-content .actions button:hover{
+  background:rgba(255,255,255,0.12);
+  border-color:rgba(255,255,255,0.2);
+}
+.result-content .actions button:active{transform:scale(.85)}
+.result-content .actions button svg{width:22px;height:22px;fill:var(--text);opacity:0.85}
+
+.result-content .close-icon{
+  position:absolute;top:20px;right:20px;
+  width:36px;height:36px;border-radius:50%;
+  border:1px solid rgba(255,255,255,0.06);
+  background:rgba(255,255,255,0.03);
+  color:var(--text-dim);cursor:pointer;font-size:0;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .2s;
+}
+.result-content .close-icon:hover{background:rgba(255,255,255,0.08)}
+.result-content .close-icon svg{width:14px;height:14px;fill:var(--text-dim)}
 
 /* ─── Confetti ─────────────────────────────────── */
 .confetti-container{
-  position:fixed;inset:0;pointer-events:none;z-index:98;overflow:hidden;
+  position:fixed;inset:0;pointer-events:none;z-index:99;overflow:hidden;
 }
 .confetti-piece{
-  position:absolute;width:10px;height:10px;top:-12px;
+  position:absolute;top:-20px;
   animation:confettiFall linear forwards;
 }
 @keyframes confettiFall{
   0%{transform:translateY(0) rotate(0deg);opacity:1}
+  60%{opacity:1}
   100%{transform:translateY(105vh) rotate(720deg);opacity:0}
 }
+.confetti-piece.gold{background:linear-gradient(135deg,#f7c948,#f5a623)}
+.confetti-piece.silver{background:linear-gradient(135deg,#e8e8ed,#a8a8ad)}
+.confetti-piece.accent{background:linear-gradient(135deg,#ff6b35,#ff9a76)}
 
 /* ─── Shake ────────────────────────────────────── */
 @keyframes shake{
@@ -191,39 +262,52 @@ body{
   80%{transform:translate(-50%,-50%) translateX(4px) rotate(3deg)}
 }
 
+/* ─── Pulse Glow (Idle) ────────────────────────── */
+@keyframes pulseGlow{
+  0%,100%{filter:drop-shadow(0 0 6px rgba(255,107,53,0.0))}
+  50%{filter:drop-shadow(0 0 12px rgba(255,107,53,0.25))}
+}
+.wheel-wrapper.pulse canvas{animation:pulseGlow 2s ease-in-out infinite}
+
 /* ─── Footer ───────────────────────────────────── */
-.footer{text-align:center;padding:18px 0 0;color:var(--text-light);font-size:12px}
+.footer{text-align:center;padding:20px 0 0;color:var(--text-mute);font-size:12px;letter-spacing:0.5px}
 
 @media(max-width:400px){
-  .center-btn{width:52px;height:52px;font-size:12px}
-  .result-modal .food{font-size:24px}
-  .result-modal{padding:28px 20px 24px}
-  /* ─── PWA Install Banner ──────────────────────────── */
-  .pwa-banner{
-    display:none;position:fixed;bottom:0;left:0;right:0;
-    background:#fff;z-index:90;
-    box-shadow:0 -4px 20px rgba(0,0,0,.1);
-    padding:12px 16px;padding-bottom:calc(12px + env(safe-area-inset-bottom,0));
-    animation:slideUp .3s ease;
-  }
-  .pwa-banner.show{display:block}
-  @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
-  .pwa-banner-content{
-    display:flex;align-items:center;gap:10px;max-width:480px;margin:0 auto;
-  }
-  .pwa-banner-icon{font-size:28px;flex-shrink:0}
-  .pwa-banner-text{flex:1;font-size:13px;line-height:1.4}
-  .pwa-banner-text strong{display:block;font-size:14px;margin-bottom:1px}
-  .pwa-banner-text .share-icon{
-    display:inline-block;width:20px;height:20px;line-height:20px;
-    text-align:center;background:#f0f0f0;border-radius:4px;
-    font-size:12px;vertical-align:middle;
-  }
-  .pwa-banner-close{
-    background:none;border:none;font-size:16px;color:#999;cursor:pointer;
-    padding:4px 6px;flex-shrink:0;
-  }
+  .center-btn{width:50px;height:50px}
+  .center-btn svg{width:20px;height:20px}
+  .result-content{padding:32px 20px}
+  .result-content .food{font-size:min(56px,12vw)}
+  .result-content .emoji{font-size:48px}
 }
+
+/* ─── PWA Install Banner ──────────────────────────── */
+.pwa-banner{
+  display:none;position:fixed;bottom:0;left:0;right:0;
+  background:rgba(42,42,45,0.95);z-index:90;
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border-top:1px solid rgba(255,255,255,0.06);
+  padding:12px 16px;padding-bottom:calc(12px + env(safe-area-inset-bottom,0));
+  animation:slideUp .3s ease;
+}
+.pwa-banner.show{display:block}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.pwa-banner-content{
+  display:flex;align-items:center;gap:10px;max-width:480px;margin:0 auto;
+}
+.pwa-banner-icon{font-size:28px;flex-shrink:0}
+.pwa-banner-text{flex:1;font-size:13px;line-height:1.4;color:var(--text-dim)}
+.pwa-banner-text strong{display:block;font-size:14px;color:var(--text);margin-bottom:1px}
+.pwa-banner-text .share-icon{
+  display:inline-block;width:20px;height:20px;line-height:20px;
+  text-align:center;background:rgba(255,255,255,0.08);border-radius:4px;
+  font-size:12px;vertical-align:middle;color:var(--text-dim);
+}
+.pwa-banner-close{
+  background:none;border:none;font-size:16px;color:var(--text-mute);cursor:pointer;
+  padding:4px 6px;flex-shrink:0;transition:color .2s;
+}
+.pwa-banner-close:hover{color:var(--text)}
 </style>
 </head>
 <body>
@@ -233,29 +317,36 @@ body{
   <div class="header">
     <div class="icon">🍔</div>
     <h1>今天吃啥？</h1>
-    <p>转一下就知道</p>
+    <p>转一下就知道了</p>
   </div>
 
   <!-- Wheel Card -->
   <div class="wheel-card">
-    <div class="wheel-wrapper">
+    <div class="wheel-wrapper pulse" id="wheelWrapper">
       <div class="pointer"></div>
       <canvas id="wheelCanvas" width="680" height="680"></canvas>
-      <button class="center-btn" id="spinBtn">转!</button>
+      <button class="center-btn" id="spinBtn">
+        <span class="icon-play">
+          <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+        </span>
+        <span class="icon-dots">
+          <svg viewBox="0 0 24 24"><circle cx="6" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="18" cy="12" r="2"/></svg>
+        </span>
+      </button>
     </div>
   </div>
 
   <!-- Options -->
   <div class="options-section">
     <div class="options-header">
-      <h2>📋 选项</h2>
+      <h2>选项</h2>
       <span class="count" id="optionCount">15 项</span>
     </div>
     <div class="option-list" id="optionList"></div>
     <div class="add-row">
       <input type="text" id="newOption" placeholder="加个选项（如：螺蛳粉）" maxlength="20"
              onkeydown="if(event.key==='Enter')addOption()">
-      <button onclick="addOption()">＋ 添加</button>
+      <button onclick="addOption()">添加</button>
     </div>
     <div class="presets">
       <button onclick="loadPreset('default')">🍽️ 默认菜单</button>
@@ -265,7 +356,7 @@ body{
     </div>
   </div>
 
-  <div class="footer">🍕 转一转，不纠结</div>
+  <div class="footer">🍕 转一转 · 不纠结</div>
 </div>
 
 <!-- iOS PWA Install Banner -->
@@ -280,16 +371,22 @@ body{
   </div>
 </div>
 
-<!-- Result Overlay -->
+<!-- Result Overlay (full screen) -->
 <div class="result-overlay" id="resultOverlay">
-  <div class="result-modal">
-    <button class="close" onclick="closeResult()">✕</button>
+  <div class="result-content" style="position:relative">
+    <button class="close-icon" onclick="closeResult()">
+      <svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+    </button>
     <span class="emoji" id="resultEmoji">🍜</span>
-    <h2>🎯 今天吃这个！</h2>
+    <h2>今天就吃</h2>
     <div class="food" id="resultFood">火锅</div>
     <div class="actions">
-      <button class="btn-primary" onclick="spinAgain()">🔄 再来一次</button>
-      <button class="btn-secondary" onclick="shareResult()">📤 分享</button>
+      <button onclick="spinAgain()" title="再转一次">
+        <svg viewBox="0 0 24 24"><path d="M17.65 6.35A7.96 7.96 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+      </button>
+      <button onclick="shareResult()" title="分享结果">
+        <svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>
+      </button>
     </div>
   </div>
 </div>
@@ -299,12 +396,27 @@ body{
 
 <script>
 // ─── Constants ─────────────────────────────────────
+// Warm, refined palette — no rainbow
 const COLORS = [
-  '#FF6B35','#F7C948','#4ECDC4','#FF6B6B','#A78BFA',
-  '#F472B6','#34D399','#FBBF24','#60A5FA','#FB923C',
-  '#A78BFA','#F87171','#2DD4BF','#FCD34D','#818CF8',
-  '#F472B6','#4ADE80','#F97316','#38BDF8','#E879F9',
+  '#FF6B35','#F7C948','#E85D75','#A78BFA','#4ECDC4',
+  '#FF8F5C','#F5A623','#F472B6','#818CF8','#34D399',
+  '#FF6B35','#F7C948','#E85D75','#A78BFA','#4ECDC4',
+  '#FF8F5C','#F5A623','#F472B6','#818CF8','#34D399',
 ];
+
+// Gradient stops per color — subtle within-hue shading
+const COLOR_GRADIENTS = {
+  '#FF6B35':  ['#FF6B35','#FF8552'],
+  '#F7C948':  ['#F7C948','#FADC6E'],
+  '#E85D75':  ['#E85D75','#EF7F93'],
+  '#A78BFA':  ['#A78BFA','#BDA4F5'],
+  '#4ECDC4':  ['#4ECDC4','#6DD9D2'],
+  '#FF8F5C':  ['#FF8F5C','#FFA878'],
+  '#F5A623':  ['#F5A623','#F7C252'],
+  '#F472B6':  ['#F472B6','#F795C7'],
+  '#818CF8':  ['#818CF8','#9AA5F5'],
+  '#34D399':  ['#34D399','#5AD9AD'],
+};
 
 const FOOD_EMOJIS = [
   '🍜','🍕','🥟','🥘','🍣','🍗','🥗','🍝','🌮','🥪',
@@ -322,6 +434,7 @@ const PRESETS = {
 let options = [...PRESETS.default];
 let wheelAngle = 0;       // current rotation in degrees
 let isSpinning = false;
+let glowRadius = 0;
 
 const canvas = document.getElementById('wheelCanvas');
 const ctx = canvas.getContext('2d');
@@ -335,36 +448,72 @@ const INNER_R = OUTER_R * 0.14; // center circle radius
 // ─── Drawing ───────────────────────────────────────
 function deg2rad(d){ return d * Math.PI / 180 }
 
-function drawWheel(angleDeg){
+function getGradientForColor(color){
+  return COLOR_GRADIENTS[color] || [color, color];
+}
+
+function drawWheel(angleDeg, blurAmount){
   ctx.clearRect(0,0,W,H);
   const n = options.length;
   if(n===0){
     ctx.beginPath();ctx.arc(CX,CY,OUTER_R,0,2*Math.PI);
-    ctx.fillStyle='#eee';ctx.fill();
-    ctx.fillStyle='#999';ctx.font='24px sans-serif';
+    ctx.fillStyle='#2a2a2d';ctx.fill();
+    ctx.fillStyle='#6e6e73';ctx.font='22px -apple-system,"PingFang SC",sans-serif';
     ctx.textAlign='center';ctx.textBaseline='middle';
     ctx.fillText('加几个选项吧',CX,CY);
     return;
   }
 
+  // ── Apply motion blur ──
+  if(blurAmount){
+    ctx.shadowBlur = blurAmount;
+    ctx.shadowColor = 'rgba(0,0,0,0.15)';
+  }
+
   const slice = 360 / n;
 
-  // ── outer ring shadow ──
-  ctx.beginPath();ctx.arc(CX,CY,OUTER_R+4,0,2*Math.PI);
-  ctx.fillStyle='rgba(0,0,0,0.06)';ctx.fill();
+  // ── outer ring gradient stroke (metal rim effect) ──
+  const rimGrad = ctx.createConicGradient(deg2rad(angleDeg), CX, CY);
+  rimGrad.addColorStop(0, 'rgba(255,255,255,0.08)');
+  rimGrad.addColorStop(0.25, 'rgba(255,255,255,0.15)');
+  rimGrad.addColorStop(0.5, 'rgba(255,255,255,0.05)');
+  rimGrad.addColorStop(0.75, 'rgba(255,255,255,0.12)');
+  rimGrad.addColorStop(1, 'rgba(255,255,255,0.08)');
+  ctx.beginPath();ctx.arc(CX,CY,OUTER_R+3,0,2*Math.PI);
+  ctx.strokeStyle=rimGrad;ctx.lineWidth=6;ctx.stroke();
+
+  // ── inner shadow ring ──
+  ctx.beginPath();ctx.arc(CX,CY,OUTER_R,0,2*Math.PI);
+  ctx.fillStyle='rgba(0,0,0,0.15)';ctx.fill();
 
   for(let i=0;i<n;i++){
     const a0 = deg2rad(angleDeg + i*slice);
     const a1 = deg2rad(angleDeg + (i+1)*slice);
 
-    // segment fill
-    ctx.beginPath();ctx.moveTo(CX,CY);ctx.arc(CX,CY,OUTER_R,a0,a1);ctx.closePath();
-    ctx.fillStyle=COLORS[i%COLORS.length];ctx.fill();
+    // ── subtle gradient fill per segment ──
+    const baseColor = COLORS[i%COLORS.length];
+    const [c1, c2] = getGradientForColor(baseColor);
 
-    // segment border
-    ctx.strokeStyle='rgba(255,255,255,0.25)';ctx.lineWidth=2;ctx.stroke();
+    const grad = ctx.createRadialGradient(CX, CY, 0, CX, CY, OUTER_R);
+    grad.addColorStop(0, c2);
+    grad.addColorStop(1, c1);
 
-    // text
+    ctx.beginPath();
+    ctx.moveTo(CX, CY);
+    ctx.arc(CX, CY, OUTER_R-1, a0, a1);
+    ctx.closePath();
+    ctx.fillStyle=grad;
+    ctx.fill();
+
+    // ── thin white separator lines ──
+    ctx.beginPath();
+    ctx.moveTo(CX, CY);
+    ctx.lineTo(CX + (OUTER_R-1)*Math.cos(a0), CY + (OUTER_R-1)*Math.sin(a0));
+    ctx.strokeStyle='rgba(255,255,255,0.3)';
+    ctx.lineWidth=1.5;
+    ctx.stroke();
+
+    // ── text ──
     const mid = deg2rad(angleDeg + (i+0.5)*slice);
     const tr = OUTER_R * 0.62;
     const tx = CX + tr*Math.cos(mid);
@@ -373,13 +522,14 @@ function drawWheel(angleDeg){
     ctx.save();
     ctx.translate(tx,ty);
     ctx.rotate(mid + Math.PI/2);
+    ctx.shadowBlur = 0; // reset blur for text
 
     const txt = options[i];
     const fontSize = Math.max(12, Math.min(22, 280/n));
     ctx.font = `bold ${fontSize}px -apple-system,"PingFang SC",sans-serif`;
     ctx.textAlign='center';ctx.textBaseline='middle';
     ctx.fillStyle='#fff';
-    ctx.shadowColor='rgba(0,0,0,0.35)';ctx.shadowBlur=5;
+    ctx.shadowColor='rgba(0,0,0,0.4)';ctx.shadowBlur=6;
 
     const maxW = OUTER_R*0.52;
     const display = ctx.measureText(txt).width > maxW && txt.length>4
@@ -388,10 +538,25 @@ function drawWheel(angleDeg){
     ctx.restore();
   }
 
-  // center dot
+  // ── inner ring (separator between segments and center) ──
+  ctx.beginPath();ctx.arc(CX,CY,OUTER_R*0.17,0,2*Math.PI);
+  ctx.strokeStyle='rgba(255,255,255,0.08)';ctx.lineWidth=2;ctx.stroke();
+
+  // ── center dot ──
   ctx.beginPath();ctx.arc(CX,CY,INNER_R,0,2*Math.PI);
-  ctx.fillStyle='#fff';ctx.fill();
-  ctx.strokeStyle=COLORS[0];ctx.lineWidth=3;ctx.stroke();
+  const cGrad = ctx.createRadialGradient(CX-4,CY-4,0,CX,CY,INNER_R);
+  cGrad.addColorStop(0,'rgba(255,255,255,0.25)');
+  cGrad.addColorStop(1,'rgba(255,255,255,0.04)');
+  ctx.fillStyle=cGrad;ctx.fill();
+  ctx.strokeStyle='rgba(255,255,255,0.12)';ctx.lineWidth=2;ctx.stroke();
+
+  // ── micro-glow on idle (only when not spinning) ──
+  if(!isSpinning && n > 0){
+    ctx.shadowBlur = 0;
+    ctx.beginPath();ctx.arc(CX,CY,OUTER_R+2,0,2*Math.PI);
+    ctx.strokeStyle=`rgba(255,107,53,${0.06 + 0.04*Math.sin(Date.now()/1500)})`;
+    ctx.lineWidth=4;ctx.stroke();
+  }
 }
 
 // ─── Spin Logic ────────────────────────────────────
@@ -402,45 +567,66 @@ function spin(){
   isSpinning=true;
   const btn=document.getElementById('spinBtn');
   btn.classList.add('spinning');
-  btn.textContent='⋯';
+
+  // Remove pulse glow during spin
+  document.getElementById('wheelWrapper').classList.remove('pulse');
 
   const n=options.length;
   const slice=360/n;
 
-  // 1. Pick random destination
+  // Pick random destination
   const targetIdx=Math.floor(Math.random()*n);
-  //    We want center of targetIdx segment under the pointer (top = 270°)
-  //    Segment mid: wheelAngle + (targetIdx+0.5)*slice should equal 270
-  //    → desired final wheelAngle = 270 - (targetIdx+0.5)*slice
   const desiredAngle=((270-(targetIdx+0.5)*slice)%360+360)%360;
 
-  // 2. Compute total rotation: extra full spins + compensate current angle
-  const fullSpins=(5+Math.floor(Math.random()*6))*360; // 5-10 full rotations
+  // Compute total rotation
+  const fullSpins=(5+Math.floor(Math.random()*6))*360;
   const delta=((desiredAngle-wheelAngle)%360+360)%360;
   const totalRot=fullSpins+delta;
 
   const startAngle=wheelAngle;
   const targetAngle=wheelAngle+totalRot;
-  const duration=3000+Math.random()*1500; // 3-4.5s
+  const duration=3500+Math.random()*1500; // 3.5-5s
   const t0=performance.now();
 
-  function easeOutCubic(t){ return 1-Math.pow(1-t,3) }
+  function easeOutQuart(t){ return 1-Math.pow(1-t,4) }
 
   function step(now){
     const p=Math.min((now-t0)/duration,1);
-    const e=easeOutCubic(p);
+    const e=easeOutQuart(p);
     wheelAngle=startAngle+totalRot*e;
-    drawWheel(wheelAngle);
+
+    // Motion blur: strongest in the middle of the spin
+    const blurIntensity = Math.sin(p * Math.PI) * 18;
+    drawWheel(wheelAngle, blurIntensity);
 
     if(p<1){
       requestAnimationFrame(step);
     }else{
-      wheelAngle=targetAngle; // exact final value
-      drawWheel(wheelAngle);
-      isSpinning=false;
-      btn.classList.remove('spinning');
-      btn.textContent='转!';
-      showResult();
+      // ── Bounce back effect ──
+      const bounceSteps = 8;
+      const bounceDuration = 300;
+      const bounceStart = performance.now();
+
+      function bounceStep(now){
+        const bp = Math.min((now - bounceStart) / bounceDuration, 1);
+        // Damped overshoot
+        const overshoot = Math.sin(bp * Math.PI * 3) * (1 - bp) * 1.2;
+        const finalAngle = targetAngle + overshoot;
+        wheelAngle = finalAngle;
+        drawWheel(wheelAngle, 0);
+
+        if(bp < 1){
+          requestAnimationFrame(bounceStep);
+        } else {
+          wheelAngle = targetAngle;
+          drawWheel(wheelAngle, 0);
+          isSpinning=false;
+          btn.classList.remove('spinning');
+          document.getElementById('wheelWrapper').classList.add('pulse');
+          showResult();
+        }
+      }
+      requestAnimationFrame(bounceStep);
     }
   }
   requestAnimationFrame(step);
@@ -451,7 +637,6 @@ function getSelectedIndex(){
   const n=options.length;
   if(n===0) return -1;
   const slice=360/n;
-  // pointer at 270° (top)
   const norm=((270-wheelAngle)%360+360)%360;
   return Math.floor(norm/slice);
 }
@@ -475,7 +660,7 @@ function closeResult(){
 
 function spinAgain(){
   closeResult();
-  setTimeout(spin,350);
+  setTimeout(spin,400);
 }
 
 // ─── Share ─────────────────────────────────────────
@@ -510,29 +695,26 @@ function fallbackCopy(text){
 function shakeBtn(){
   const btn=document.getElementById('spinBtn');
   btn.style.animation='shake .4s ease';
-  btn.textContent='至少2项!';
   setTimeout(()=>{
     btn.style.animation='';
-    btn.textContent='转!';
   },1200);
 }
 
 // ─── Confetti ──────────────────────────────────────
-const CONFETTI_COLORS=['#FF6B35','#F7C948','#4ECDC4','#FF6B6B','#A78BFA','#F472B6','#34D399','#60A5FA'];
-
 function fireConfetti(){
   const c=document.getElementById('confettiContainer');
   c.innerHTML='';
-  for(let i=0;i<60;i++){
+  const pieces = 30; // fewer but bigger
+  const classes = ['gold','silver','accent','gold','silver'];
+  for(let i=0;i<pieces;i++){
     const el=document.createElement('div');
-    el.className='confetti-piece';
+    el.className='confetti-piece ' + classes[i%classes.length];
     el.style.left=Math.random()*100+'%';
-    el.style.background=CONFETTI_COLORS[Math.floor(Math.random()*CONFETTI_COLORS.length)];
-    const sz=5+Math.random()*9;
+    const sz=8+Math.random()*12;
     el.style.width=sz+'px';el.style.height=sz+'px';
     el.style.borderRadius=Math.random()>.5?'50%':'2px';
-    el.style.animationDuration=(1.5+Math.random()*2)+'s';
-    el.style.animationDelay=Math.random()*1.2+'s';
+    el.style.animationDuration=(2+Math.random()*2.5)+'s';
+    el.style.animationDelay=Math.random()*0.8+'s';
     c.appendChild(el);
   }
 }
@@ -545,7 +727,11 @@ function renderOptions(){
   options.forEach((o,i)=>{
     const tag=document.createElement('span');
     tag.className='option-tag';
-    tag.innerHTML=`${o}<button class="remove" onclick="removeOption(${i})">✕</button>`;
+    tag.dataset.index=i;
+    tag.innerHTML=`${o}
+      <button class="remove" onclick="removeOption(${i})">
+        <svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round"/></svg>
+      </button>`;
     list.appendChild(tag);
   });
   document.getElementById('optionCount').textContent=`${options.length} 项`;
@@ -564,13 +750,32 @@ function addOption(){
   }
   options.push(v);
   inp.value='';inp.focus();
+
+  // Re-render with spring animation
   renderOptions();
+
+  // Scroll the new tag into view
+  const list=document.getElementById('optionList');
+  const tags=list.querySelectorAll('.option-tag');
+  if(tags.length>0) tags[tags.length-1].scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
 function removeOption(i){
   if(options.length<=1){ alert('至少保留一个选项 😅'); return }
-  options.splice(i,1);
-  renderOptions();
+
+  // Animate out then remove
+  const list=document.getElementById('optionList');
+  const tags=list.querySelectorAll('.option-tag');
+  if(tags[i]){
+    tags[i].classList.add('removing');
+    setTimeout(()=>{
+      options.splice(i,1);
+      renderOptions();
+    },200);
+  } else {
+    options.splice(i,1);
+    renderOptions();
+  }
 }
 
 function loadPreset(name){

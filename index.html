@@ -814,6 +814,18 @@ if('serviceWorker' in navigator){
     }
   });
 
+  // Unlock audio on first user interaction (required by iOS Safari)
+  function unlockAudio() {
+    initAudio();
+    if (audioCtx && audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+    document.removeEventListener('touchstart', unlockAudio);
+    document.removeEventListener('click', unlockAudio);
+  }
+  document.addEventListener('touchstart', unlockAudio);
+  document.addEventListener('click', unlockAudio);
+
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('sw.js').then((reg)=>{
       console.log('SW registered:',reg.scope);

@@ -46,6 +46,14 @@
 - 增值功能：自定义主题色、保存选项列表、自定义分享文案
 - 一次性购买去广告
 
+## PWA 要求
+
+- Service Worker 注册，支持离线使用
+- manifest.json 内联或独立文件，支持添加到主屏幕
+- 图标：至少 192x192 和 512x512
+- 全屏模式显示（无浏览器 chrome）
+
 ## 输出
 
-一个 `index.html` 文件，纯前端，零后端，可丢到 Vercel/Netlify/GitHub Pages 直接上线。
+一个 `index.html` 文件 + 相关资源（manifest, sw.js 等），纯前端，零后端，可丢到 Vercel/Netlify/GitHub Pages 直接上线。
+手机添加到桌面后体验接近原生 App。

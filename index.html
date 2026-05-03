@@ -399,7 +399,7 @@ body{
 // Warm, refined palette — no rainbow
 // ─── Audio (Web Audio API) ──────────────────────
 let audioCtx = null;
-function initAudio(){if(!audioCtx) audioCtx=new(window.AudioContext||window.webkitAudioContext)()}
+function initAudio(){if(!audioCtx) audioCtx=new(window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended') audioCtx.resume()}
 function playTick(){try{initAudio();const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.connect(g);g.connect(audioCtx.destination);o.frequency.value=800+Math.random()*400;o.type='sine';g.gain.setValueAtTime(0.06,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.04);o.start();o.stop(audioCtx.currentTime+0.04)}catch(e){}}
 function playDing(){try{initAudio();const t=audioCtx.currentTime;[523.25,659.25].forEach((f,i)=>{const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.connect(g);g.connect(audioCtx.destination);o.frequency.value=f;o.type='sine';g.gain.setValueAtTime(0.12,t+i*0.12);g.gain.exponentialRampToValueAtTime(0.001,t+i*0.12+0.5);o.start(t+i*0.12);o.stop(t+i*0.12+0.5)})}catch(e){}}
 function playCelebration(){try{initAudio();const t=audioCtx.currentTime;[523.25,587.33,659.25,783.99].forEach((f,i)=>{const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.connect(g);g.connect(audioCtx.destination);o.frequency.value=f;o.type='triangle';g.gain.setValueAtTime(0.1,t+i*0.1);g.gain.exponentialRampToValueAtTime(0.001,t+i*0.1+0.3);o.start(t+i*0.1);o.stop(t+i*0.1+0.3)})}catch(e){}}
@@ -569,6 +569,9 @@ function drawWheel(angleDeg, blurAmount){
 
 // ─── Spin Logic ────────────────────────────────────
 function spin(){
+  // Unlock audio on user gesture (required for mobile Safari)
+  initAudio();
+
   if(isSpinning) return;
   if(options.length<2){ shakeBtn(); return }
 
@@ -808,23 +811,10 @@ function loadPreset(name){
 if('serviceWorker' in navigator){
   // Click anywhere on the wheel wrapper to spin
   document.getElementById('wheelWrapper').addEventListener('click', function(e) {
-    // Don't trigger spin when clicking the center button
     if (!e.target.closest('.center-btn')) {
       spin();
     }
   });
-
-  // Unlock audio on first user interaction (required by iOS Safari)
-  function unlockAudio() {
-    initAudio();
-    if (audioCtx && audioCtx.state === 'suspended') {
-      audioCtx.resume();
-    }
-    document.removeEventListener('touchstart', unlockAudio);
-    document.removeEventListener('click', unlockAudio);
-  }
-  document.addEventListener('touchstart', unlockAudio);
-  document.addEventListener('click', unlockAudio);
 
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('sw.js').then((reg)=>{

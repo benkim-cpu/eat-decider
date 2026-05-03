@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>今天吃啥？— 吃啥决定器 🍔</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #fff8f0;
+    --card: #ffffff;
+    --primary: #ff6b35;
+    --primary-light: #ff8f5c;
+    --text: #2d2d2d;
+    --text-light: #888;
+    --border: #f0e6dc;
+    --shadow: 0 8px 32px rgba(0,0,0,0.08);
+    --radius: 16px;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang SC', 'Noto Sans SC', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 20px 16px 40px;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .container {
+    max-width: 480px;
+    width: 100%;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    padding: 20px 0 12px;
+  }
+  .header .icon { font-size: 32px; }
+  .header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    margin-top: 4px;
+    background: linear-gradient(135deg, #ff6b35, #f7c948);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .header p {
+    color: var(--text-light);
+    font-size: 14px;
+    margin-top: 4px;
+  }
+
+  /* Wheel Card */
+  .wheel-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 24px;
+    margin: 16px 0;
+  }
+
+  .wheel-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 360px;
+    margin: 0 auto;
+    aspect-ratio: 1;
+  }
+
+  .wheel-wrapper canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+    border-radius: 50%;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    touch-action: none;
+  }
+
+  /* Pointer */
+  .pointer {
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 18px solid transparent;
+    border-right: 18px solid transparent;
+    border-top: 28px solid var(--primary);
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+    z-index: 5;
+  }
+
+  /* Center button on wheel */
+  .center-btn {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: white;
+    border: 4px solid white;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(255,107,53,0.4);
+    transition: transform 0.15s, box-shadow 0.15s;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: 1px;
+  }
+  .center-btn:active { transform: translate(-50%, -50%) scale(0.92); }
+  .center-btn.spinning { pointer-events: none; opacity: 0.85; }
+
+  /* Options Section */
+  .options-section {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 20px 24px;
+    margin: 16px 0;
+  }
+  .options-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .options-header h2 {
+    font-size: 16px;
+    font-weight: 600;
+  }
+  .options-header .count {
+    font-size: 13px;
+    color: var(--text-light);
+    background: var(--bg);
+    padding: 2px 12px;
+    border-radius: 20px;
+  }
+
+  .option-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+    min-height: 36px;
+  }
+  .option-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    background: var(--bg);
+    border-radius: 20px;
+    font-size: 14px;
+    animation: tagIn 0.25s ease-out;
+  }
+  @keyframes tagIn {
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  .option-tag .remove {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: none;
+    background: #ddd;
+    color: var(--text-light);
+    font-size: 11px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s;
+    line-height: 1;
+  }
+  .option-tag .remove:hover { background: #ff4444; color: white; }
+
+  .add-row {
+    display: flex;
+    gap: 8px;
+  }
+  .add-row input {
+    flex: 1;
+    padding: 10px 16px;
+    border: 2px dashed var(--border);
+    border-radius: 24px;
+    font-size: 14px;
+    outline: none;
+    background: transparent;
+    transition: border-color 0.2s;
+  }
+  .add-row input:focus { border-color: var(--primary-light); }
+  .add-row input::placeholder { color: #ccc; }
+  .add-row button {
+    padding: 10px 20px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 24px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+    white-space: nowrap;
+  }
+  .add-row button:hover { background: var(--primary-light); }
+  .add-row button:active { transform: scale(0.96); }
+
+  /* Result Modal */
+  .result-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+    animation: fadeIn 0.3s ease;
+  }
+  .result-overlay.show { display: flex; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .result-modal {
+    background: white;
+    border-radius: 24px;
+    padding: 40px 32px 32px;
+    text-align: center;
+    max-width: 360px;
+    width: 90vw;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+  }
+  @keyframes popIn {
+    from { transform: scale(0.7); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+
+  .result-modal .emoji {
+    font-size: 64px;
+    margin-bottom: 8px;
+    display: block;
+  }
+  .result-modal h2 {
+    font-size: 14px;
+    color: var(--text-light);
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+  .result-modal .food {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--primary);
+    margin: 8px 0 20px;
+  }
+  .result-modal .actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+  }
+  .result-modal .actions button {
+    padding: 10px 28px;
+    border-radius: 24px;
+    border: none;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.15s;
+  }
+  .result-modal .actions button:active { transform: scale(0.95); }
+  .result-modal .actions .btn-primary {
+    background: var(--primary);
+    color: white;
+    flex: 1;
+  }
+  .result-modal .actions .btn-secondary {
+    background: var(--bg);
+    color: var(--text);
+    flex: 1;
+  }
+
+  .result-modal .close {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: var(--text-light);
+    cursor: pointer;
+    padding: 4px;
+  }
+
+  /* Presets */
+  .presets {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+  }
+  .presets button {
+    padding: 5px 12px;
+    border-radius: 16px;
+    border: 1.5px solid var(--border);
+    background: transparent;
+    font-size: 12px;
+    color: var(--text-light);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .presets button:hover {
+    border-color: var(--primary-light);
+    color: var(--primary);
+    background: rgba(255,107,53,0.06);
+  }
+
+  /* Confetti Container */
+  .confetti-container {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 99;
+    overflow: hidden;
+  }
+
+  .confetti {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    top: -10px;
+    animation: confettiFall linear forwards;
+  }
+  @keyframes confettiFall {
+    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+  }
+
+  .footer {
+    text-align: center;
+    padding: 20px 0 0;
+    color: var(--text-light);
+    font-size: 12px;
+  }
+
+  @media (max-width: 400px) {
+    .center-btn { width: 56px; height: 56px; font-size: 11px; }
+    .result-modal .food { font-size: 26px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <!-- Header -->
+  <div class="header">
+    <div class="icon">🍔</div>
+    <h1>今天吃啥？</h1>
+    <p>转一下就知道</p>
+  </div>
+
+  <!-- Wheel Card -->
+  <div class="wheel-card">
+    <div class="wheel-wrapper">
+      <div class="pointer"></div>
+      <canvas id="wheelCanvas" width="720" height="720"></canvas>
+      <button class="center-btn" id="spinBtn" onclick="spin()">转!</button>
+    </div>
+  </div>
+
+  <!-- Options -->
+  <div class="options-section">
+    <div class="options-header">
+      <h2>📋 选项</h2>
+      <span class="count" id="optionCount">10 项</span>
+    </div>
+    <div class="option-list" id="optionList"></div>
+    <div class="add-row">
+      <input type="text" id="newOption" placeholder="加个选项（如：螺蛳粉）" maxlength="20" onkeydown="if(event.key==='Enter') addOption()">
+      <button onclick="addOption()">＋ 添加</button>
+    </div>
+    <div class="presets">
+      <button onclick="loadPreset('default')">默认菜单</button>
+      <button onclick="loadPreset('drinks')">喝什么</button>
+      <button onclick="loadPreset('dinner')">晚餐去哪</button>
+      <button onclick="loadPreset('weekend')">周末去哪</button>
+    </div>
+  </div>
+
+  <div class="footer">
+    🍕 转一转，不纠结
+  </div>
+</div>
+
+<!-- Result Overlay -->
+<div class="result-overlay" id="resultOverlay">
+  <div class="result-modal">
+    <button class="close" onclick="closeResult()">✕</button>
+    <span class="emoji" id="resultEmoji">🍜</span>
+    <h2>🎯 今天吃这个！</h2>
+    <div class="food" id="resultFood">火锅</div>
+    <div class="actions">
+      <button class="btn-primary" onclick="spinAgain()">再来一次</button>
+      <button class="btn-secondary" onclick="shareResult()">📤 分享</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confetti Container -->
+<div class="confetti-container" id="confettiContainer"></div>
+
+<script>
+// ─── Data ──────────────────────────────────────────
+const COLORS = [
+  '#FF6B35', '#F7C948', '#4ECDC4', '#FF6B6B', '#A78BFA',
+  '#F472B6', '#34D399', '#FBBF24', '#60A5FA', '#FB923C',
+  '#A78BFA', '#F87171', '#2DD4BF', '#FCD34D', '#818CF8',
+  '#F472B6', '#4ADE80', '#F97316', '#38BDF8', '#E879F9',
+];
+
+const FOOD_EMOJIS = ['🍜','🍕','🥟','🥘','🍣','🍗','🥗','🍝','🌮','🥪','🍛','🍲','🫕','🥙','🌯','🥩','🍔','🍟','🌭','🍱','🥟','🍜'];
+
+const PRESETS = {
+  default: ['米饭', '面条', '火锅', '烧烤', '饺子', '寿司', '披萨', '汉堡', '炒菜', '沙拉', '麻辣烫', '炸鸡', '麻辣香锅', '螺蛳粉', '日料'],
+  drinks: ['奶茶', '咖啡', '果汁', '可乐', '柠檬茶', '酸奶', '气泡水', '椰汁', '冰美式', '抹茶'],
+  dinner: ['火锅店', '日料店', '烧烤摊', '西餐厅', '大排档', '湘菜馆', '粤菜馆', '川菜馆', '居酒屋', '小面馆'],
+  weekend: ['看电影', '逛公园', '爬山', '宅家', '逛街', '图书馆', '咖啡馆', '打游戏', '运动', '做饭'],
+};
+
+let options = [...PRESETS.default];
+let currentAngle = 0;
+let isSpinning = false;
+const canvas = document.getElementById('wheelCanvas');
+const ctx = canvas.getContext('2d');
+
+// ─── Wheel Drawing ────────────────────────────────
+function degToRad(deg) { return deg * Math.PI / 180; }
+
+function drawWheel(angle) {
+  const w = canvas.width;
+  const h = canvas.height;
+  const cx = w / 2;
+  const cy = h / 2;
+  const r = w / 2 - 20;
+  const n = options.length;
+
+  ctx.clearRect(0, 0, w, h);
+
+  if (n === 0) {
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, 2 * Math.PI);
+    ctx.fillStyle = '#eee';
+    ctx.fill();
+    ctx.fillStyle = '#999';
+    ctx.font = '28px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('加几个选项吧', cx, cy);
+    return;
+  }
+
+  const sliceAngle = 360 / n;
+
+  for (let i = 0; i < n; i++) {
+    const startAngle = degToRad(angle + i * sliceAngle);
+    const endAngle = degToRad(angle + (i + 1) * sliceAngle);
+
+    // Draw segment
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, r, startAngle, endAngle);
+    ctx.closePath();
+    ctx.fillStyle = COLORS[i % COLORS.length];
+    ctx.fill();
+
+    // Segment border
+    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Text
+    const midAngle = degToRad(angle + (i + 0.5) * sliceAngle);
+    const textR = r * 0.62;
+    const tx = cx + textR * Math.cos(midAngle);
+    const ty = cy + textR * Math.sin(midAngle);
+
+    ctx.save();
+    ctx.translate(tx, ty);
+    ctx.rotate(midAngle + Math.PI / 2);
+
+    const text = options[i];
+    ctx.fillStyle = '#fff';
+    ctx.font = `bold ${Math.min(22, Math.max(13, 300 / n))}px -apple-system, "PingFang SC", sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    // Text shadow for readability
+    ctx.shadowColor = 'rgba(0,0,0,0.3)';
+    ctx.shadowBlur = 4;
+
+    const maxWidth = r * 0.55;
+    if (ctx.measureText(text).width > maxWidth) {
+      const truncated = text.length > 4 ? text.slice(0, 4) + '…' : text;
+      ctx.fillText(truncated, 0, 0);
+    } else {
+      ctx.fillText(text, 0, 0);
+    }
+    ctx.restore();
+  }
+
+  // Center circle
+  ctx.beginPath();
+  ctx.arc(cx, cy, r * 0.15, 0, 2 * Math.PI);
+  ctx.fillStyle = '#fff';
+  ctx.fill();
+  ctx.strokeStyle = COLORS[0];
+  ctx.lineWidth = 3;
+  ctx.stroke();
+
+  // Outer ring
+  ctx.beginPath();
+  ctx.arc(cx, cy, r + 4, 0, 2 * Math.PI);
+  ctx.strokeStyle = 'rgba(0,0,0,0.06)';
+  ctx.lineWidth = 8;
+  ctx.stroke();
+}
+
+// ─── Spinning ─────────────────────────────────────
+function spin() {
+  if (isSpinning) return;
+  if (options.length < 2) {
+    shakeButton();
+    return;
+  }
+
+  isSpinning = true;
+  document.getElementById('spinBtn').classList.add('spinning');
+  document.getElementById('spinBtn').textContent = '⋯';
+
+  const extraSpins = 5 + Math.random() * 5;
+  const targetAngle = currentAngle + extraSpins * 360 + (360 - (currentAngle % 360));
+  const totalRotation = targetAngle - currentAngle;
+  const duration = 3000 + Math.random() * 1500; // 3-4.5s
+  const startTime = performance.now();
+  const startAngle = currentAngle;
+
+  function easeOutCubic(t) {
+    return 1 - Math.pow(1 - t, 3);
+  }
+
+  function animate(now) {
+    const elapsed = now - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    const eased = easeOutCubic(progress);
+
+    currentAngle = startAngle + totalRotation * eased;
+    drawWheel(currentAngle);
+
+    if (progress < 1) {
+      requestAnimationFrame(animate);
+    } else {
+      currentAngle = targetAngle % 360;
+      drawWheel(currentAngle);
+      isSpinning = false;
+      document.getElementById('spinBtn').classList.remove('spinning');
+      document.getElementById('spinBtn').textContent = '转!';
+      showResult();
+    }
+  }
+
+  requestAnimationFrame(animate);
+}
+
+function getResult() {
+  const n = options.length;
+  if (n === 0) return null;
+  // Normalize angle: pointer at top (270 degrees in standard math)
+  // Each segment: (i * sliceAngle) to ((i+1) * sliceAngle)
+  const sliceAngle = 360 / n;
+  // The pointer is at the top, which is at angle 270 in canvas coordinates
+  // But our drawing starts from angle 0 (3 o'clock) going clockwise
+  // Top = 270° in standard math. In our drawing, angle=0 is at 3 o'clock.
+  // So top is at angle 270 on the wheel.
+  // Need to find which segment contains 270° given the current rotation
+  const pointerAngle = 270; // degrees, pointer at top
+  const normalizedAngle = ((pointerAngle - currentAngle) % 360 + 360) % 360;
+  const index = Math.floor(normalizedAngle / sliceAngle);
+  return options[index % n];
+}
+
+function showResult() {
+  const food = getResult();
+  if (!food) return;
+
+  const overlay = document.getElementById('resultOverlay');
+  document.getElementById('resultFood').textContent = food;
+
+  // Pick a fun emoji
+  const idx = options.indexOf(food);
+  const emoji = FOOD_EMOJIS[idx % FOOD_EMOJIS.length];
+  document.getElementById('resultEmoji').textContent = emoji;
+
+  overlay.classList.add('show');
+  fireConfetti();
+}
+
+function closeResult() {
+  document.getElementById('resultOverlay').classList.remove('show');
+  clearConfetti();
+}
+
+function spinAgain() {
+  closeResult();
+  setTimeout(spin, 300);
+}
+
+function shareResult() {
+  const food = getResult();
+  if (!food) return;
+  const text = `🎯 今天吃${food}！\n——来自「今天吃啥？」决定器`;
+
+  if (navigator.share) {
+    navigator.share({ title: '今天吃啥？', text }).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(text).then(() => {
+      alert('已复制到剪贴板，快去分享吧！');
+    }).catch(() => {
+      prompt('复制这段文字分享给朋友：', text);
+    });
+  }
+}
+
+function shakeButton() {
+  const btn = document.getElementById('spinBtn');
+  btn.style.animation = 'shake 0.4s ease';
+  btn.textContent = '至少2项!';
+  setTimeout(() => {
+    btn.style.animation = '';
+    btn.textContent = '转!';
+  }, 1200);
+}
+
+// ─── Confetti ─────────────────────────────────────
+function fireConfetti() {
+  const container = document.getElementById('confettiContainer');
+  container.innerHTML = '';
+  const colors = ['#FF6B35','#F7C948','#4ECDC4','#FF6B6B','#A78BFA','#F472B6','#34D399','#60A5FA'];
+
+  for (let i = 0; i < 60; i++) {
+    const el = document.createElement('div');
+    el.className = 'confetti';
+    el.style.left = Math.random() * 100 + '%';
+    el.style.background = colors[Math.floor(Math.random() * colors.length)];
+    el.style.width = (6 + Math.random() * 8) + 'px';
+    el.style.height = (6 + Math.random() * 8) + 'px';
+    el.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+    el.style.animationDuration = (1.5 + Math.random() * 2) + 's';
+    el.style.animationDelay = Math.random() * 1.5 + 's';
+    container.appendChild(el);
+  }
+}
+
+function clearConfetti() {
+  document.getElementById('confettiContainer').innerHTML = '';
+}
+
+// ─── Options Management ────────────────────────────
+function renderOptions() {
+  const list = document.getElementById('optionList');
+  list.innerHTML = '';
+  options.forEach((opt, i) => {
+    const tag = document.createElement('span');
+    tag.className = 'option-tag';
+    tag.innerHTML = `${opt} <button class="remove" onclick="removeOption(${i})">✕</button>`;
+    list.appendChild(tag);
+  });
+  document.getElementById('optionCount').textContent = `${options.length} 项`;
+  // Re-draw wheel
+  drawWheel(currentAngle);
+}
+
+function addOption() {
+  const input = document.getElementById('newOption');
+  const val = input.value.trim();
+  if (!val) return;
+  if (options.includes(val)) {
+    input.value = '';
+    input.placeholder = '已经有了！换个吧';
+    setTimeout(() => { input.placeholder = '加个选项（如：螺蛳粉）'; }, 1500);
+    return;
+  }
+  options.push(val);
+  input.value = '';
+  input.focus();
+  renderOptions();
+}
+
+function removeOption(index) {
+  if (options.length <= 1) {
+    alert('至少保留一个选项 😅');
+    return;
+  }
+  options.splice(index, 1);
+  renderOptions();
+}
+
+function loadPreset(name) {
+  options = [...PRESETS[name]];
+  currentAngle = 0;
+  renderOptions();
+}
+
+// ─── Init ─────────────────────────────────────────
+// Add shake animation
+const style = document.createElement('style');
+style.textContent = `
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-8px) rotate(-5deg); }
+    40% { transform: translateX(8px) rotate(5deg); }
+    60% { transform: translateX(-5px) rotate(-3deg); }
+    80% { transform: translateX(5px) rotate(3deg); }
+  }
+`;
+document.head.appendChild(style);
+
+renderOptions();
+</script>
+</body>
+</html>

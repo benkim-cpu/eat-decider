@@ -325,7 +325,7 @@ body{
     <div class="wheel-wrapper pulse" id="wheelWrapper">
       <div class="pointer"></div>
       <canvas id="wheelCanvas" width="680" height="680"></canvas>
-      <button class="center-btn" id="spinBtn">
+      <button class="center-btn" id="spinBtn" onclick="spin()">
         <span class="icon-play">
           <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
         </span>
@@ -397,6 +397,13 @@ body{
 <script>
 // ─── Constants ─────────────────────────────────────
 // Warm, refined palette — no rainbow
+// ─── Audio (Web Audio API) ──────────────────────
+let audioCtx = null;
+function initAudio(){if(!audioCtx) audioCtx=new(window.AudioContext||window.webkitAudioContext)()}
+function playTick(){try{initAudio();const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.connect(g);g.connect(audioCtx.destination);o.frequency.value=800+Math.random()*400;o.type='sine';g.gain.setValueAtTime(0.06,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.04);o.start();o.stop(audioCtx.currentTime+0.04)}catch(e){}}
+function playDing(){try{initAudio();const t=audioCtx.currentTime;[523.25,659.25].forEach((f,i)=>{const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.connect(g);g.connect(audioCtx.destination);o.frequency.value=f;o.type='sine';g.gain.setValueAtTime(0.12,t+i*0.12);g.gain.exponentialRampToValueAtTime(0.001,t+i*0.12+0.5);o.start(t+i*0.12);o.stop(t+i*0.12+0.5)})}catch(e){}}
+function playCelebration(){try{initAudio();const t=audioCtx.currentTime;[523.25,587.33,659.25,783.99].forEach((f,i)=>{const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.connect(g);g.connect(audioCtx.destination);o.frequency.value=f;o.type='triangle';g.gain.setValueAtTime(0.1,t+i*0.1);g.gain.exponentialRampToValueAtTime(0.001,t+i*0.1+0.3);o.start(t+i*0.1);o.stop(t+i*0.1+0.3)})}catch(e){}}
+
 const COLORS = [
   '#FF6B35','#F7C948','#E85D75','#A78BFA','#4ECDC4',
   '#FF8F5C','#F5A623','#F472B6','#818CF8','#34D399',
@@ -434,6 +441,7 @@ const PRESETS = {
 let options = [...PRESETS.default];
 let wheelAngle = 0;       // current rotation in degrees
 let isSpinning = false;
+let lastTickSeg = -1;
 let glowRadius = 0;
 
 const canvas = document.getElementById('wheelCanvas');
@@ -599,6 +607,16 @@ function spin(){
     const blurIntensity = Math.sin(p * Math.PI) * 18;
     drawWheel(wheelAngle, blurIntensity);
 
+    // Play tick on each segment boundary during spin (throttled)
+    if(p>0.1 && p<1) {
+      const segAngle = 360 / options.length;
+      const currentSeg = Math.floor(((wheelAngle % 360) + 360) % 360 / segAngle);
+      if (currentSeg !== lastTickSeg) {
+        lastTickSeg = currentSeg;
+        playTick();
+      }
+    }
+
     if(p<1){
       requestAnimationFrame(step);
     }else{
@@ -621,6 +639,7 @@ function spin(){
           wheelAngle = targetAngle;
           drawWheel(wheelAngle, 0);
           isSpinning=false;
+          playDing();
           btn.classList.remove('spinning');
           document.getElementById('wheelWrapper').classList.add('pulse');
           showResult();
@@ -650,6 +669,7 @@ function showResult(){
   document.getElementById('resultFood').textContent=food;
   document.getElementById('resultEmoji').textContent=FOOD_EMOJIS[idx%FOOD_EMOJIS.length];
   overlay.classList.add('show');
+  playCelebration();
   fireConfetti();
 }
 
@@ -786,6 +806,14 @@ function loadPreset(name){
 
 // ─── PWA: Service Worker Registration ───────────────
 if('serviceWorker' in navigator){
+  // Click anywhere on the wheel wrapper to spin
+  document.getElementById('wheelWrapper').addEventListener('click', function(e) {
+    // Don't trigger spin when clicking the center button
+    if (!e.target.closest('.center-btn')) {
+      spin();
+    }
+  });
+
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('sw.js').then((reg)=>{
       console.log('SW registered:',reg.scope);
